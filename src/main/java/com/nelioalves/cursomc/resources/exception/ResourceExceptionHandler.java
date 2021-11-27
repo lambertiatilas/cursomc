@@ -1,6 +1,8 @@
 package com.nelioalves.cursomc.resources.exception;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +37,16 @@ public class ResourceExceptionHandler {
 		ValidationError err = new ValidationError(HttpStatus.BAD_REQUEST.value(), "Erro de validação", System.currentTimeMillis());
 		for (FieldError x : e.getBindingResult().getFieldErrors()) {
 			err.addError(x.getField(), x.getDefaultMessage());
+		}	
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+	}
+	
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<StandardError> constraintvalidation(ConstraintViolationException e, HttpServletRequest request) {
+		
+		ValidationError err = new ValidationError(HttpStatus.BAD_REQUEST.value(), "Erro de validação", System.currentTimeMillis());
+		for (ConstraintViolation<?> x : e.getConstraintViolations()) {
+			err.addError(x.getPropertyPath().toString(), x.getMessage());
 		}	
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
 	}
